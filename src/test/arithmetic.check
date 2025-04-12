@@ -1,0 +1,4 @@
+#include "test.h"
+
+#test test_test
+    ck_assert_int_eq(1, 1);
