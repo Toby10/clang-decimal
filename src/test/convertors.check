@@ -1,0 +1,253 @@
+#include "test.h"
+
+
+// -=-=-=- INTEGER to DECIMAL -=-=-=-
+
+#test from_int_to_decimal_positive
+    s21_decimal dec;
+    int result = s21_from_int_to_decimal(123, &dec);
+    ck_assert_int_eq(result, SUCCESS);
+    ck_assert_int_eq(dec.bits[0], 123);
+    ck_assert_int_eq(dec.bits[1], 0);
+    ck_assert_int_eq(dec.bits[2], 0);
+    ck_assert_int_eq(dec.bits[3], 0);
+
+#test from_int_to_decimal_negative
+    s21_decimal dec;
+    int result = s21_from_int_to_decimal(-123, &dec);
+    ck_assert_int_eq(result, SUCCESS);
+    ck_assert_int_eq(dec.bits[0], 123);
+    ck_assert_int_eq(dec.bits[1], 0);
+    ck_assert_int_eq(dec.bits[2], 0);
+    ck_assert_int_eq(dec.bits[3] >> 31, 1);
+
+#test from_int_to_decimal_null_dst
+    int result = s21_from_int_to_decimal(123, NULL);
+    ck_assert_int_eq(result, FAILURE);
+
+#test from_int_to_decimal_limits
+    s21_decimal dec;
+    int result = s21_from_int_to_decimal(2147483647, &dec);
+    ck_assert_int_eq(result, SUCCESS);
+    ck_assert_int_eq(dec.bits[0], 2147483647);
+    ck_assert_int_eq(dec.bits[1], 0);
+    ck_assert_int_eq(dec.bits[2], 0);
+    ck_assert_int_eq(dec.bits[3], 0);
+
+    result = s21_from_int_to_decimal(-2147483648, &dec);
+    ck_assert_int_eq(result, SUCCESS);
+    ck_assert_int_eq(dec.bits[0], 2147483648);
+    ck_assert_int_eq(dec.bits[1], 0);
+    ck_assert_int_eq(dec.bits[2], 0);
+    ck_assert_int_eq(dec.bits[3] >> 31, 1);
+
+
+// -=-=-=- FLOAT to DECIMAL -=-=-=-
+
+#test from_float_to_decimal_positive
+    s21_decimal dec;
+    int result = s21_from_float_to_decimal(123.45f, &dec);
+    ck_assert_int_eq(result, SUCCESS);
+    ck_assert_int_eq(dec.bits[0], 12345);
+    ck_assert_int_eq(dec.bits[1], 0);
+    ck_assert_int_eq(dec.bits[2], 0);
+    ck_assert_int_eq((dec.bits[3] & 0x00FF0000) >> 16, 2);
+
+#test from_float_to_decimal_negative
+    s21_decimal dec;
+    int result = s21_from_float_to_decimal(-0.007f, &dec);
+    ck_assert_int_eq(result, SUCCESS);
+    ck_assert_int_eq(dec.bits[0], 7);
+    ck_assert_int_eq(dec.bits[1], 0);
+    ck_assert_int_eq(dec.bits[2], 0);
+    ck_assert_int_eq((dec.bits[3] & 0x00FF0000) >> 16, 3);
+    ck_assert_int_eq((dec.bits[3] & 0xF0000000) >> 31, 1);
+
+#test from_float_to_decimal_zero
+    s21_decimal dec;
+    int result = s21_from_float_to_decimal(0.0f, &dec);
+    ck_assert_int_eq(result, SUCCESS);
+    ck_assert_int_eq(dec.bits[0], 0);
+    ck_assert_int_eq(dec.bits[1], 0);
+    ck_assert_int_eq(dec.bits[2], 0);
+    ck_assert_int_eq((dec.bits[3] & 0x00FF0000) >> 16, 0);
+
+#test from_float_to_decimal_negative_zero
+    s21_decimal dec;
+    int result = s21_from_float_to_decimal(-0.0f, &dec);
+    ck_assert_int_eq(result, SUCCESS);
+    ck_assert_int_eq(dec.bits[0], 0);
+    ck_assert_int_eq(dec.bits[1], 0);
+    ck_assert_int_eq(dec.bits[2], 0);
+    ck_assert_int_eq((dec.bits[3] & 0x00FF0000) >> 16, 0);
+    ck_assert_int_eq((dec.bits[3] & 0xFF000000) >> 31, 1);
+
+#test from_float_to_decimal_null_dst
+    int result = s21_from_float_to_decimal(1.23f, NULL);
+    ck_assert_int_eq(result, FAILURE);
+
+#test from_float_to_decimal_max_scale
+    s21_decimal dec;
+    int result = s21_from_float_to_decimal(0.0000009f, &dec);
+    ck_assert_int_eq(result, SUCCESS);
+    ck_assert_int_eq(dec.bits[0], 9);
+    ck_assert_int_eq((dec.bits[3] & 0x00FF0000) >> 16, 7);
+
+#test from_float_to_decimal_overflow_scale_squeeze
+    s21_decimal dec;
+    int result = s21_from_float_to_decimal(-0.00000001f, &dec);
+    ck_assert_int_eq(result, SUCCESS);
+    ck_assert_int_eq(dec.bits[0], 0);
+    ck_assert_int_eq((dec.bits[3] & 0x00FF0000) >> 16, 0);
+    ck_assert_int_eq((dec.bits[3] & 0xFF000000) >> 31, 1);
+
+#test from_float_to_decimal_overflow_scale_round
+    s21_decimal dec;
+    int result = s21_from_float_to_decimal(0.00000009f, &dec);
+    ck_assert_int_eq(result, SUCCESS);
+    ck_assert_int_eq(dec.bits[0], 1);
+    ck_assert_int_eq((dec.bits[3] & 0x00FF0000) >> 16, 7);
+
+#test from_float_to_decimal_nan
+    s21_decimal dec;
+    int result = s21_from_float_to_decimal(0.0 / 0.0, &dec);
+    ck_assert_int_eq(result, FAILURE);
+
+#test from_float_to_decimal_inf
+    s21_decimal dec;
+    int result = s21_from_float_to_decimal(exp(800), &dec);
+    ck_assert_int_eq(result, FAILURE);
+
+#test s21_from_float_to_decimal_too_small
+    s21_decimal dec;
+    int result = s21_from_float_to_decimal(1e-30f, &dec);
+    ck_assert_int_eq(result, FAILURE);
+    ck_assert_int_eq(dec.bits[0], 0);
+    ck_assert_int_eq(dec.bits[1], 0);
+    ck_assert_int_eq(dec.bits[2], 0);
+    ck_assert_int_eq(dec.bits[3], 0);
+
+
+// -=-=-=- DECIMAL to INTEGER -=-=-=-
+
+#test s21_from_decimal_to_int_positive
+    s21_decimal dec = {{123, 0, 0, 0}};  // 123
+    int value = 0;
+    int res = s21_from_decimal_to_int(dec, &value);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_int_eq(value, 123);
+
+#test s21_from_decimal_to_int_negative
+    s21_decimal dec = {{456, 0, 0, 0x80000000}};  // -456
+    int value = 0;
+    int res = s21_from_decimal_to_int(dec, &value);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_int_eq(value, -456);
+
+#test s21_from_decimal_to_int_with_scale
+    s21_decimal dec = {{12300, 0, 0, 2 << 16}};  // 123.00
+    int value = 0;
+    int res = s21_from_decimal_to_int(dec, &value);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_int_eq(value, 123);
+
+#test s21_from_decimal_to_int_overflow_positive
+    s21_decimal dec = {{0x8FFFFFFF, 0x00000000, 0, 0}};  // > INT_MAX
+    int value = 0;
+    int res = s21_from_decimal_to_int(dec, &value);
+    ck_assert_int_eq(res, FAILURE);
+
+#test s21_from_decimal_to_int_overflow_negative
+    s21_decimal dec = {{0x90000000, 0x00000000, 0, 0x80000000}};  // < INT_MIN
+    int value = 0;
+    int res = s21_from_decimal_to_int(dec, &value);
+    ck_assert_int_eq(res, FAILURE);
+
+#test s21_from_decimal_to_int_exact_int_min
+    s21_decimal dec = {{(uint32_t)INT_MAX + 1U, 0, 0, 0x80000000}};
+    int value = 0;
+    int res = s21_from_decimal_to_int(dec, &value);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_int_eq(value, INT_MIN);
+
+#test s21_from_decimal_to_int_exact_int_max
+    s21_decimal dec = {{(uint32_t)INT_MAX, 0, 0, 0}};
+    int value = 0;
+    int res = s21_from_decimal_to_int(dec, &value);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_int_eq(value, INT_MAX);
+
+#test s21_from_decimal_to_int_invalid_decimal
+    s21_decimal dec = {{0, 0, 0, 0xFFFF0000}};  // invalid scale
+    int value = 0;
+    int res = s21_from_decimal_to_int(dec, &value);
+    ck_assert_int_eq(res, FAILURE);
+
+#test s21_from_decimal_to_int_null_ptr
+    s21_decimal dec = {{123, 0, 0, 0}};
+    int res = s21_from_decimal_to_int(dec, NULL);
+    ck_assert_int_eq(res, FAILURE);
+
+
+// -=-=-=- DECIMAL to FLOAT -=-=-=-
+
+#test s21_from_decimal_to_float_basic_positive
+    s21_decimal dec = {{123, 0, 0, 0}};  // 123
+    float result = 0.0f;
+    int res = s21_from_decimal_to_float(dec, &result);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_msg(fabs(result - 123.0f) < 1e-6, "Expected 123.0, got %f", result);
+
+#test s21_from_decimal_to_float_basic_negative
+    s21_decimal dec = {{456, 0, 0, 0x80000000}};  // -456
+    float result = 0.0f;
+    int res = s21_from_decimal_to_float(dec, &result);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_msg(fabs(result + 456.0f) < 1e-6, "Expected -456.0, got %f", result);
+
+#test s21_from_decimal_to_float_with_scale
+    s21_decimal dec = {{12345, 0, 0, 2 << 16}};  // 123.45
+    float result = 0.0f;
+    int res = s21_from_decimal_to_float(dec, &result);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_msg(fabs(result - 123.45f) < 1e-6, "Expected 123.45, got %f", result);
+
+#test s21_from_decimal_to_float_large_value
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};  // max 96-bit unsigned
+    float result = 0.0f;
+    int res = s21_from_decimal_to_float(dec, &result);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_msg(result > 7.9e28f, "Expected large float, got %f", result);
+
+#test s21_from_decimal_to_float_zero
+    s21_decimal dec = {{0, 0, 0, 0}};
+    float result = 42.0f;  // pre init
+    int res = s21_from_decimal_to_float(dec, &result);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_int_eq(result, 0);
+
+#test s21_from_decimal_to_float_zero_negative
+    s21_decimal dec = {{0, 0, 0, 0x80000000}}; // -0
+    float result = 0.0f;
+    int res = s21_from_decimal_to_float(dec, &result);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_msg(result == 0.0f && signbit(result), "Expected -0.0f, got %f", result);
+
+#test s21_from_decimal_to_float_negative_with_scale
+    s21_decimal dec = {{2500, 0, 0, (2 << 16) | 0x80000000}};  // -25.00
+    float result = 0.0f;
+    int res = s21_from_decimal_to_float(dec, &result);
+    ck_assert_int_eq(res, SUCCESS);
+    ck_assert_msg(fabs(result + 25.0f) < 1e-6, "Expected -25.0, got %f", result);
+
+#test s21_from_decimal_to_float_invalid_decimal
+    s21_decimal dec = {{1, 0, 0, 0xFFFFFFFF}};  // invalid decimal
+    float result = 0.0f;
+    int res = s21_from_decimal_to_float(dec, &result);
+    ck_assert_int_eq(res, FAILURE);
+
+#test s21_from_decimal_to_float_null_ptr
+    s21_decimal dec = {{100, 0, 0, 0}};
+    int res = s21_from_decimal_to_float(dec, NULL);
+    ck_assert_int_eq(res, FAILURE);
+

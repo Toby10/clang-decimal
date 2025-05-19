@@ -20,7 +20,7 @@ endif
 
 # List of targets from the task: all, clean, test, s21_decimal.a, gcov_report
 
-all: $(LIB_NAME) test
+all: $(LIB_NAME) test clean
 
 $(LIB_NAME): $(OBJ)
 	ar rcs $@ $^
