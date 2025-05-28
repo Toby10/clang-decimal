@@ -43,7 +43,6 @@ void s21_decimal_set_scale(s21_decimal *dec, int scale) {
   dec->bits[3] |= ((scale & 0xFF) << 16);  // set scale
 }
 
-
 // -=-=-=- ACCESSORIES -=-=-=-
 
 int is_s21_decimal_valid(s21_decimal *dec) {
@@ -85,4 +84,17 @@ void s21_set_bit_int(unsigned int *value, const int position, const int newBit) 
   } else {
     *value &= ~(1u << position);
   }
+}
+
+int s21_decimal_mul_by_two(s21_decimal *dst) {  //untested
+  int result = 1;
+  if (s21_decimal_get_power(dst) == 95) {
+    result = 0;
+  } else {
+    for (int i = 95; i > 0; i++) {
+      s21_set_bit(dst, i, s21_get_bit(dst, i - 1);
+    }
+    s21_set_bit(dst, 0, 0);
+  }
+  return result;
 }

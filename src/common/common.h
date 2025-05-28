@@ -31,4 +31,6 @@ int s21_get_bit(s21_decimal *dec, const int position);
 void s21_set_bit(s21_decimal *dec, const int position, const int newBit);
 void s21_set_bit_int(unsigned int *value, const int position, const int newBit);
 
+int s21_decimal_mul_by_two(s21_decimal *dst);
+
 #endif //COMMON_H
