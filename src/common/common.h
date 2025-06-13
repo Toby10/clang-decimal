@@ -10,6 +10,9 @@
 #define TRUE 1
 #define FALSE 0
 
+#define S21_TOO_BIG 1
+#define S21_TOO_SMALL 2
+
 // -=-=-=- S21_DECIMAL INTERFACE -=-=-=-
 
 void s21_decimal_init(s21_decimal *dst);
@@ -23,6 +26,14 @@ int s21_decimal_get_scale(s21_decimal *dec);
 int is_s21_decimal_valid(s21_decimal *dec);
 #define s21_get_sign(arg) ((arg < 0) ? 1 : 0) // 0 – positive
 #define s21_abs(arg) ((arg < 0) ? -arg : arg)
+void s21_div_by_ten(s21_decimal *value);
+int s21_mul_by_ten(s21_decimal * value);
 
+// -=-=-=- SCALE FUNCTIONS -=-=-=-
+
+int s21_inc_scale(s21_decimal* value);
+void s21_dec_scale(s21_decimal* value, int shift);
+int s21_align_scale(s21_decimal* value1, s21_decimal* value2);
 
 #endif //COMMON_H
+
