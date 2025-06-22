@@ -9,7 +9,7 @@ int s21_is_equal(s21_decimal num1, s21_decimal num2) {
                 result = 0;
             }
         }
-        if (s21_decimal_get_scale(&num1) != s21_decimal_get_scale(&num2)) {
+        if (s21_decimal_get_scale(num1) != s21_decimal_get_scale(num2)) {
             result = 0;
         }
         if (s21_decimal_get_sign(&num1) != s21_decimal_get_sign(&num2)) {
@@ -21,8 +21,8 @@ int s21_is_equal(s21_decimal num1, s21_decimal num2) {
 
 int s21_is_less(s21_decimal num1, s21_decimal num2) {
     int result = -1;
-    int power1 = s21_decimal_get_power(&num1), power2 = s21_decimal_get_power(&num2);
-    int exp1 = s21_decimal_get_scale(&num1), exp2 = s21_decimal_get_scale(&num2);
+    int power1 = s21_decimal_get_power(num1), power2 = s21_decimal_get_power(num2);
+    int exp1 = s21_decimal_get_scale(num1), exp2 = s21_decimal_get_scale(num2);
     if (s21_is_equal(num1, num2)) {
         result = 0;
     } else if (s21_decimal_get_sign(&num1) ^ s21_decimal_get_sign(&num2)) {

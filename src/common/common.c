@@ -15,16 +15,16 @@ int s21_decimal_get_sign(s21_decimal *dec) {
   return (dec->bits[3] & 0x80000000) == 0x80000000;
 }
 
-int s21_decimal_get_scale(s21_decimal *dec) {
-  return (dec->bits[3] >> 16) & 0xFF;
+int s21_decimal_get_scale(s21_decimal dec) {
+  return (dec.bits[3] >> 16) & 0xFF;
 }
 
-int s21_decimal_get_power(s21_decimal *dec) {
+int s21_decimal_get_power(s21_decimal dec) {
   int i = 95;
-  if (is_s21_decimal_zero(dec)) {
+  if (is_s21_decimal_zero(&dec)) {
     i = 0;
   } else {
-    while (s21_get_bit(*dec,i) == 0) {
+    while (s21_get_bit(&dec,i) == 0) {
       i--;
     }
   }
@@ -45,15 +45,15 @@ void s21_decimal_set_scale(s21_decimal *dec, int scale) {
 
 // -=-=-=- ACCESSORIES -=-=-=-
 
-int s21_get_bit(const s21_decimal value, const int position) {
-    return (value.bits[position / 32] >> (position % 32)) & 1;
+int s21_get_bit(s21_decimal *dec, const int position) {
+    return (dec->bits[position / 32] >> (position % 32)) & 1;
 }
 
 int is_s21_decimal_valid(s21_decimal *dec) {
   if (!dec) return FALSE;
 
   int is_valid = (dec->bits[3] & 0x7F00FFFF) == 0;
-  if (is_valid) is_valid = (s21_decimal_get_scale(dec) <= DECIMAL_MAX_SCALE);
+  if (is_valid) is_valid = (s21_decimal_get_scale(*dec) <= DECIMAL_MAX_SCALE);
   return is_valid;
 }
 
@@ -84,18 +84,18 @@ int s21_mul_by_ten(s21_decimal *value) {
 // -=-=-=- SCALE FUNCTIONS -=-=-=-
 
 int s21_inc_scale(s21_decimal *value) {
-  s21_decimal_set_scale(value, s21_decimal_get_scale(value) + 1);
+  s21_decimal_set_scale(value, s21_decimal_get_scale(*value) + 1);
   return s21_mul_by_ten(value);
 }
 void s21_dec_scale(s21_decimal *value, int shift) {
   for (int i = 0; i < shift; i++) s21_div_by_ten(value);
-  s21_decimal_set_scale(value, s21_decimal_get_scale(value) - shift);
+  s21_decimal_set_scale(value, s21_decimal_get_scale(*value) - shift);
 }
 
 int s21_align_scale(s21_decimal *value1, s21_decimal *value2) {
   int high, low;
-  high = s21_decimal_get_scale(value1);
-  low = s21_decimal_get_scale(value2);
+  high = s21_decimal_get_scale(*value1);
+  low = s21_decimal_get_scale(*value2);
   if (high != low) {
     if (high < low)
       high = s21_align_scale(value2, value1);
