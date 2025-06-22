@@ -24,7 +24,7 @@ int s21_decimal_get_power(s21_decimal *dec) {
   if (is_s21_decimal_zero(dec)) {
     i = 0;
   } else {
-    while (s21_get_bit(dec,i) == 0) {
+    while (s21_get_bit(*dec,i) == 0) {
       i--;
     }
   }

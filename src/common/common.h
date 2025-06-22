@@ -30,7 +30,7 @@ int is_s21_decimal_zero(s21_decimal *dec);
 #define s21_get_sign(arg) ((arg < 0) ? 1 : 0) // 0 – positive
 #define s21_abs(arg) ((arg < 0) ? -arg : arg)
 
-int s21_get_bit(s21_decimal *dec, const int position);
+int s21_get_bit(s21_decimal dec, const int position);
 void s21_set_bit(s21_decimal *dec, const int position, const int newBit);
 void s21_set_bit_int(unsigned int *value, const int position, const int newBit);
 
