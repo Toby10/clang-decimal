@@ -45,6 +45,10 @@ void s21_decimal_set_scale(s21_decimal *dec, int scale) {
 
 // -=-=-=- ACCESSORIES -=-=-=-
 
+int s21_get_bit(const s21_decimal value, const int position) {
+    return (value.bits[position / 32] >> (position % 32)) & 1;
+}
+
 int is_s21_decimal_valid(s21_decimal *dec) {
   if (!dec) return FALSE;
 
