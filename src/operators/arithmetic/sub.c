@@ -47,4 +47,6 @@ int s21_sub_aligned(s21_decimal value_1, s21_decimal value_2,
     result->bits[i] = (diff & ((1u << 31) - 1));
     borrow = (diff >> (32 * 2 - 1)) & 1;
   }
+  int res = borrow ? 0 : 1;
+  return res;
 }

@@ -40,4 +40,5 @@ int s21_add_aligned(s21_decimal value_1, s21_decimal value_2,
   }
   int res = leftover ? 0 : 1;
   // if(!res) result = s21_bank(result, leftover); TODOOOOOTOTOTOO
+  return res;
 }

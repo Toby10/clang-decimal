@@ -34,6 +34,7 @@ int s21_get_bit(s21_decimal *dec, const int position);
 void s21_set_bit(s21_decimal *dec, const int position, const int newBit);
 void s21_set_bit_int(unsigned int *value, const int position, const int newBit);
 
+void s21_div_by_ten(s21_decimal *value);
 int s21_decimal_mul_by_two(s21_decimal *dst);
 int s21_inc_scale(s21_decimal* value);
 void s21_dec_scale(s21_decimal* value, int shift);
