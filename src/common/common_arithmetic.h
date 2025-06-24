@@ -1,8 +1,7 @@
 #ifndef ARITHMETIC_H
 #define ARITHMETIC_H
 
-#include "../common/common.h"
-#include "../s21_decimal.h"
+#include "common.h"
 
 // -=-=-=- SIMPLE ARITHMETIC -=-=-=-
 

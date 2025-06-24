@@ -1,4 +1,3 @@
-#include "../s21_decimal.h"
 #include "../common/common.h"
 
 int s21_is_equal(s21_decimal num1, s21_decimal num2) {

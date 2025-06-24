@@ -1,4 +1,4 @@
-#include "../common_arithmetic.h"
+#include "../../common/common_arithmetic.h"
 
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   if (!is_s21_decimal_valid(&value_1) || !is_s21_decimal_valid(&value_2))

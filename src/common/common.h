@@ -2,7 +2,7 @@
 #define COMMON_H
 
 #include "../s21_decimal.h"
-#include "../operators/common_arithmetic.h"
+#include "common_arithmetic.h"
 
 // -=-=-=- RESPONSE CODES -=-=-=-
 
