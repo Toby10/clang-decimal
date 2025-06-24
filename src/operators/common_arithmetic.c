@@ -1,0 +1,120 @@
+#include "common_arithmetic.h"
+
+// -=-=-=- SIMPLE ARITHMETIC -=-=-=-
+
+int s21_decimal_add_aligned(s21_decimal value_1, s21_decimal value_2,
+                    s21_decimal* result) {
+  unsigned int sum = 0, leftover = 0;
+  for (int i = 0; i < 3; i++) {
+    sum = value_1.bits[i] + value_2.bits[i] + leftover;
+    result->bits[i] = sum & ((1u << 31) - 1);
+    leftover = sum >> 31;
+  }
+  int res = leftover ? 0 : 1;
+  // if(!res) result = s21_bank(result, leftover); TODOOOOOTOTOTOO
+  return res;
+}
+
+int s21_decimal_add_digit(s21_decimal *dec, int digit) {
+  if (!(digit >= 0 && digit <= 9)) return FAILURE;
+
+  unsigned int carry = digit;
+  for (int i = 0; i < 3 && carry > 0; i++) {
+    unsigned int sum = dec->bits[i] + carry;
+    carry = (sum < dec->bits[i]) ? 1 : 0;
+    dec->bits[i] = sum;
+  }
+
+  return (carry > 0) ? FAILURE : SUCCESS;
+}
+
+int s21_decimal_sub_aligned(s21_decimal value_1, s21_decimal value_2,
+                    s21_decimal *result) {
+  unsigned long diff = 0;
+  unsigned long borrow = 0;
+  for (int i = 0; i < 3; i++) {
+    diff = value_1.bits[i] - value_2.bits[i] - borrow;
+    result->bits[i] = (diff & ((1u << 31) - 1));
+    borrow = (diff >> (32 * 2 - 1)) & 1;
+  }
+  int res = borrow ? 0 : 1;
+  return res;
+}
+
+int s21_decimal_div_by_10(s21_decimal *value) {
+  unsigned int leftover = 0;
+  
+  for (int j = 2; j >= 0; j--) {
+    unsigned int cur_bit = (leftover << 31) | value->bits[j];
+    value->bits[j] = cur_bit / 10;
+    leftover = cur_bit % 10;
+  }
+
+  return leftover ? FAILURE : SUCCESS;
+}
+
+int s21_decimal_mul_by_10(s21_decimal *value) {
+  int res = 0;
+  unsigned int leftover = 0, tmp[3] = {0};
+  for (int j = 0; j < 3; j++) {
+    tmp[j] = value->bits[j] * 10u + leftover;
+    leftover = tmp[j] >> 31;
+    tmp[j] &= (1ull << 31) - 1;
+  }
+  if (leftover != 0)
+    res = 1;
+  else {
+    for (int i = 0; i < 3; i++) value->bits[i] = tmp[i];
+  }
+  return res;
+}
+
+/*
+int s21_decimal_mul_by_10(s21_decimal *dec) {
+  s21_decimal tmp1 = *dec;
+  s21_decimal tmp2 = *dec;
+  int ok1 = s21_decimal_shift_left_n(&tmp1, 3);             // * 8
+  int ok2 = s21_decimal_shift_left_n(&tmp2, 1);             // * 2
+  return (ok1 && ok2 && s21_decimal_add_aligned(tmp1, tmp2, dec));  // 8x + 2x
+}
+*/
+
+int s21_decimal_shift_left_n(s21_decimal *dec, int n) {
+  unsigned carry = 0;
+
+  for (int i = 0; i < n && !carry; i++) {
+    for (int j = 0; j < 3; j++) {
+      unsigned new_carry = (dec->bits[j] & 0x80000000) ? 1 : 0;
+      dec->bits[j] = (dec->bits[j] << 1) | carry;
+      carry = new_carry;
+    }
+  }
+
+  return (carry) ? FAILURE : SUCCESS;
+}
+
+// -=-=-=- SCALE FUNCTIONS -=-=-=-
+
+int s21_decimal_inc_scale(s21_decimal *value) {
+  s21_decimal_set_scale(value, s21_decimal_get_scale(value) + 1);
+  return s21_decimal_mul_by_10(value);
+}
+
+void s21_decimal_dec_scale(s21_decimal *value, int shift) {
+  for (int i = 0; i < shift; i++) s21_decimal_div_by_10(value);
+  s21_decimal_set_scale(value, s21_decimal_get_scale(value) - shift);
+}
+
+int s21_decimal_align_scale(s21_decimal *value1, s21_decimal *value2) {
+  int high, low;
+  high = s21_decimal_get_scale(value1);
+  low = s21_decimal_get_scale(value2);
+  if (high != low) {
+    if (high < low)
+      high = s21_decimal_align_scale(value2, value1);
+    else {
+      while (high - low++ > 0) s21_decimal_inc_scale(value2);
+    }
+  }
+  return high;
+}

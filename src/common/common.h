@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #include "../s21_decimal.h"
+#include "../operators/common_arithmetic.h"
 
 // -=-=-=- RESPONSE CODES -=-=-=-
 
@@ -9,10 +10,13 @@
 #define FAILURE 1
 #define TRUE 1
 #define FALSE 0
+#define S21_TOO_BIG 1
+#define S21_TOO_SMALL 2
+#define S21_DIV_BY_ZERO 3
 
 // -=-=-=- S21_DECIMAL INTERFACE -=-=-=-
 
-void s21_decimal_init(s21_decimal *dst);
+void *s21_decimal_init(s21_decimal *dst);
 int s21_decimal_get_sign(s21_decimal *decimal);
 int s21_decimal_get_scale(s21_decimal *dec);
 int s21_decimal_get_power(s21_decimal *dec);

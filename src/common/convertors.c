@@ -89,7 +89,7 @@ int s21_from_decimal_to_int(s21_decimal src, int *dst) {
   int scale = s21_decimal_get_scale(&temp_dec);
   while (scale--) {
     temp_div_by_10(&temp_dec);
-  }
+  } // TODO: replace with div(dec, 10^scale)
 
   int result;
   int sign = s21_decimal_get_sign(&temp_dec);

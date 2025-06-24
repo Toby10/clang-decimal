@@ -7,8 +7,9 @@
 
 // -=-=-=- S21_DECIMAL INTERFACE -=-=-=-
 
-void s21_decimal_init(s21_decimal *dec) {
+void *s21_decimal_init(s21_decimal *dec) {
   memset(dec, 0, sizeof(s21_decimal));  // set 0
+  return dec;
 }
 
 int s21_decimal_get_sign(s21_decimal *dec) {
@@ -24,7 +25,7 @@ int s21_decimal_get_power(s21_decimal *dec) {
   if (is_s21_decimal_zero(dec)) {
     i = 0;
   } else {
-    while (s21_get_bit(dec,i) == 0) {
+    while (s21_get_bit(dec, i) == 0) {
       i--;
     }
   }
@@ -43,15 +44,13 @@ void s21_decimal_set_scale(s21_decimal *dec, int scale) {
   dec->bits[3] |= ((scale & 0xFF) << 16);  // set scale
 }
 
-
 // -=-=-=- ACCESSORIES -=-=-=-
 
 int is_s21_decimal_valid(s21_decimal *dec) {
   if (!dec) return FALSE;
 
   int is_valid = (dec->bits[3] & 0x7F00FFFF) == 0;
-  if (is_valid)
-  	is_valid = (s21_decimal_get_scale(dec) <= DECIMAL_MAX_SCALE);
+  if (is_valid) is_valid = (s21_decimal_get_scale(dec) <= DECIMAL_MAX_SCALE);
   return is_valid;
 }
 
@@ -79,7 +78,8 @@ void s21_set_bit(s21_decimal *dec, const int position, const int newBit) {
   }
 }
 
-void s21_set_bit_int(unsigned int *value, const int position, const int newBit) {
+void s21_set_bit_int(unsigned int *value, const int position,
+                     const int newBit) {
   if (newBit) {
     *value |= (1u << position);
   } else {
