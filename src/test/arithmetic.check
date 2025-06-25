@@ -14,4 +14,30 @@
     s21_decimal a = {{1252535, 1252535, 1252535, 0}}, b = {{24, 1252535, 1252535, 0}}, res = {{0}};
     int ok = s21_mul(a, b, &res);
     ck_assert_int_eq(ok, 1);
-   
+
+ #test s21_decimal_mul_overflow_2
+    s21_decimal a = {{1252535, 1252535, 1252535, 2147483648}}, b = {{24, 1252535, 1252535, 0}}, res = {{0}};
+    int ok = s21_mul(a, b, &res);
+    ck_assert_int_eq(ok, 2);
+
+ #test s21_decimal_mul_negative
+    s21_decimal a = {{11, 0, 0, 2147483648}}, b = {{13, 0, 0, 0}}, res = {{0}};
+    int ok = s21_mul(a, b, &res);
+    ck_assert_int_eq(ok, 0);
+    ck_assert_int_eq(res.bits[0], 143);
+    ck_assert_int_eq(res.bits[3], 2147483648);
+
+#test s21_decimal_mul_double_negative
+    s21_decimal a = {{11, 0, 0, 2147483648}}, b = {{13, 0, 0, 2147483648}}, res = {{0}};
+    int ok = s21_mul(a, b, &res);
+    ck_assert_int_eq(ok, 0);
+    ck_assert_int_eq(res.bits[0], 143);
+    ck_assert_int_eq(res.bits[3], 0);
+
+#test s21_decimal_mul_fractional
+    s21_decimal a = {{143, 0, 0, 65536}}, b = {{278, 0, 0, 131072}}, res = {{0}};
+    int ok = s21_mul(a, b, &res);
+    ck_assert_int_eq(ok, 0);
+    ck_assert_int_eq(res.bits[0], 39754);
+    ck_assert_int_eq(res.bits[3], 196608);
+
