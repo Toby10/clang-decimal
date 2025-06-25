@@ -1,0 +1,17 @@
+#test s21_decimal_mul_simple
+    s21_decimal a = {{1, 0, 0, 0}}, b = {{2, 0, 0, 0}}, res = {{0}};
+    int ok = s21_mul(a, b, &res);
+    ck_assert_int_eq(ok, 0);
+    ck_assert_int_eq(res.bits[0], 2);
+
+#test s21_decimal_mul_simple_2
+    s21_decimal a = {{12, 0, 0, 0}}, b = {{24, 0, 0, 0}}, res = {{0}};
+    int ok = s21_mul(a, b, &res);
+    ck_assert_int_eq(ok, 0);
+    ck_assert_int_eq(res.bits[0], 288);
+
+ #test s21_decimal_mul_overflow
+    s21_decimal a = {{1252535, 1252535, 1252535, 0}}, b = {{24, 1252535, 1252535, 0}}, res = {{0}};
+    int ok = s21_mul(a, b, &res);
+    ck_assert_int_eq(ok, 1);
+   
