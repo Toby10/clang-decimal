@@ -1,18 +1,19 @@
 #include "common_arithmetic.h"
-
+#include <stdio.h>
 // -=-=-=- SIMPLE ARITHMETIC -=-=-=-
 
 int s21_decimal_add_aligned(s21_decimal value_1, s21_decimal value_2,
                             s21_decimal *result) {
   unsigned int sum = 0, leftover = 0;
+  int res = 0;
   for (int i = 0; i < 3; i++) {
     sum = value_1.bits[i] + value_2.bits[i] + leftover;
     result->bits[i] = sum & ((1u << 31) - 1);
     leftover = sum >> 31;
+    res |= leftover ? 1 : 0;
   }
-  int res = leftover ? 0 : 1;
-  if (!res) res = s21_decimal_round_bank(result, leftover);
-  return res;
+  if (res) res &= !s21_decimal_round_bank(result, leftover);
+  return !res;
 }
 
 int s21_decimal_add_digit(s21_decimal *dec, int digit) {
@@ -34,13 +35,18 @@ int s21_decimal_sub_aligned(s21_decimal value_1, s21_decimal value_2,
                             s21_decimal *result) {
   unsigned long diff = 0;
   unsigned long borrow = 0;
+  int res = 0;
   for (int i = 0; i < 3; i++) {
     diff = value_1.bits[i] - value_2.bits[i] - borrow;
     result->bits[i] = (diff & ((1u << 31) - 1));
     borrow = (diff >> (32 * 2 - 1)) & 1;
+    res |= borrow ? 1 : 0;
   }
-  int res = borrow ? 0 : 1;
-  return res;
+  if (res) {
+    printf("%d\n", value_1.bits[0]);
+    s21_decimal_round_bank(result, borrow);
+  }
+  return !res;
 }
 
 int s21_decimal_div_by_10(s21_decimal *value) {
@@ -87,14 +93,12 @@ int s21_decimal_shift_left_n(s21_decimal *dec, int n) {
 
 int s21_decimal_round_bank(s21_decimal *dec, unsigned int leftover) {
   if (!dec || leftover > 9) return FAILURE;
-
   int overflow = FALSE;
   if (leftover > 5) {
     overflow = s21_decimal_inc(dec);
   } else if (leftover == 5) {
     if ((dec->bits[0] & 1) != 0) overflow = s21_decimal_inc(dec);
   }
-
   return overflow;
 }
 
