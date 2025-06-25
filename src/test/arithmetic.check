@@ -1,3 +1,5 @@
+// -=-=-=- MULTIPLICATION -=-=-=-
+
 #test s21_decimal_mul_simple
     s21_decimal a = {{1, 0, 0, 0}}, b = {{2, 0, 0, 0}}, res = {{0}};
     int ok = s21_mul(a, b, &res);
@@ -40,4 +42,7 @@
     ck_assert_int_eq(ok, 0);
     ck_assert_int_eq(res.bits[0], 39754);
     ck_assert_int_eq(res.bits[3], 196608);
+
+
+// -=-=-=- DIVISION -=-=-=-
 
