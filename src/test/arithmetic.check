@@ -1,0 +1,169 @@
+#test s21_add_simple
+    s21_decimal val1 = {{1, 0, 0, 0}};
+    s21_decimal val2 = {{1, 0, 0, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_add(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 2);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0);
+
+#test s21_add_less_simple
+    s21_decimal val1 = {{52, 0, 0, 5 << 16}};
+    s21_decimal val2 = {{38, 0, 0, 3 << 16}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_add(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 3852);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 5 << 16);
+
+#test s21_add_multiple_part
+    s21_decimal val1 = {{1, 1, 0, 1 << 16}};
+    s21_decimal val2 = {{1, 0, 0, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_add(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 11);
+    ck_assert_int_eq(res.bits[1], 1);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 1 << 16);
+
+#test s21_add_last_digit_big
+    s21_decimal val1 = {{0xFFFFFFFF/2, 0xFFFFFFFF/2, 0xFFFFFFFF/2 - 1, 0}};
+    s21_decimal val2 = {{0, 0, 1, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_add(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 0xFFFFFFFF/2);
+    ck_assert_int_eq(res.bits[1], 0xFFFFFFFF/2);
+    ck_assert_int_eq(res.bits[2], 0xFFFFFFFF/2);
+    ck_assert_int_eq(res.bits[3], 0);
+
+#test s21_add_simple_negative
+    s21_decimal val1 = {{12, 0, 0, 0x80000000}};
+    s21_decimal val2 = {{1, 0, 0, 0x80000000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_add(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 13);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0x80000000);
+
+#test s21_add_negative_positive
+    s21_decimal val1 = {{1, 1, 0, 0x80000000}};
+    s21_decimal val2 = {{1, 0, 0, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_add(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 0);
+    ck_assert_int_eq(res.bits[1], 1);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0x80000000);
+
+#test s21_add_positive_negative
+    s21_decimal val1 = {{52, 0, 0, 0}};
+    s21_decimal val2 = {{1, 0, 0, 0x80000000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_add(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 51);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0);
+
+#test s21_add_negative_positive_smaller
+    s21_decimal val1 = {{1, 0, 0, 0x80000000}};
+    s21_decimal val2 = {{1, 1, 0, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_add(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 0);
+    ck_assert_int_eq(res.bits[1], 1);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0);
+
+#test s21_add_positive_negative_smaller
+    s21_decimal val1 = {{52, 0, 0, 0}};
+    s21_decimal val2 = {{55, 0, 0, 0x80000000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_add(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 3);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0x80000000);
+
+#test s21_sub_simple
+    s21_decimal val1 = {{12, 0, 0, 0}};
+    s21_decimal val2 = {{1, 0, 0, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_sub(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 11);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0);
+
+#test s21_sub_simple_inv
+    s21_decimal val1 = {{12, 0, 0, 0}};
+    s21_decimal val2 = {{1, 0, 0, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_sub(val2, val1, &res), 0);
+    ck_assert_int_eq(res.bits[0], 11);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0x80000000);
+
+#test s21_sub_negative
+    s21_decimal val1 = {{12, 0, 0, 0x80000000}};
+    s21_decimal val2 = {{1, 0, 0, 0x80000000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_sub(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 11);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0x80000000);
+
+#test s21_sub_negative_inv
+    s21_decimal val1 = {{12, 0, 0, 0x80000000}};
+    s21_decimal val2 = {{1, 0, 0, 0x80000000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_sub(val2, val1, &res), 0);
+    ck_assert_int_eq(res.bits[0], 11);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0);
+
+#test s21_sub_negative_positive
+    s21_decimal val1 = {{99, 0, 0, 0x80000000}};
+    s21_decimal val2 = {{1, 0, 0, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_sub(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 100);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0x80000000);
+
+#test s21_sub_positive_negative
+    s21_decimal val1 = {{99, 0, 0, 0}};
+    s21_decimal val2 = {{1, 0, 0, 0x80000000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_sub(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 100);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0);
+
+#test s21_sub_smaller_greater
+    s21_decimal val1 = {{1, 1, 0, 0}};
+    s21_decimal val2 = {{1, 0, 0, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_sub(val2, val1, &res), 0);
+    ck_assert_int_eq(res.bits[0], 0);
+    ck_assert_int_eq(res.bits[1], 1);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0x80000000);
+
+#test s21_sub_greater_smaller
+    s21_decimal val1 = {{1, 1, 0, 0}};
+    s21_decimal val2 = {{1, 0, 0, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_sub(val1, val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 0);
+    ck_assert_int_eq(res.bits[1], 1);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0);

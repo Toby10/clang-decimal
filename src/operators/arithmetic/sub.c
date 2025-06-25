@@ -1,4 +1,5 @@
 #include "../../common/common_arithmetic.h"
+#include <stdio.h>
 
 int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   int status = SUCCESS;
@@ -12,12 +13,13 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     if (s21_is_greater(value_1, value_2)) {
       ctl = s21_decimal_sub_aligned(value_1, value_2, result);
     } else if (s21_is_greater(value_2, value_1)) {
-      ctl = s21_decimal_sub_aligned(value_2, value_1, result);
+      ctl = s21_decimal_sub_aligned(value_2, value_1, result) + 1;
     } else
       ctl = -1;
     if (ctl >= 0) {
       s21_decimal_set_scale(result, res_scale);
-      s21_decimal_set_sign(result, sign1);
+      if(ctl == 2) s21_decimal_set_sign(result, 1);
+      else s21_decimal_set_sign(result, sign1);
     }
   } else if (sign1 && !sign2) {  // First number negative, second - positive
     s21_decimal_set_sign(&value_1, 0);

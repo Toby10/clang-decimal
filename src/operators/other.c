@@ -1,6 +1,6 @@
 #include "../common/common.h"
 
-int s21_floor(s21_decimal value, s21_decimal *result) {  // Надо вычитание :()
+int s21_floor(s21_decimal value, s21_decimal *result) {
   int ret_val = s21_truncate(value, result);
   if (ret_val && !s21_is_equal(*result, value) && s21_decimal_get_sign(&value))
     ret_val = s21_sub(*result, (s21_decimal){{1, 0, 0, 0}}, result);
@@ -8,7 +8,7 @@ int s21_floor(s21_decimal value, s21_decimal *result) {  // Надо вычит�
 }
 
 int s21_round(s21_decimal value,
-              s21_decimal *result) {  // Надо вычитание и сложение :()
+              s21_decimal *result) {
   int ret_val = s21_truncate(value, result);
   if (ret_val && !s21_is_equal(*result, value)) {
     if (s21_decimal_get_sign(&value))
