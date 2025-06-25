@@ -18,14 +18,16 @@ int s21_decimal_add_aligned(s21_decimal value_1, s21_decimal value_2,
 int s21_decimal_add_digit(s21_decimal *dec, int digit) {
   if (!(digit >= 0 && digit <= 9)) return FAILURE;
 
+  s21_decimal inter_result = *dec;
   unsigned int carry = digit;
-  for (int i = 0; i < 3 && carry > 0; i++) {
-    unsigned int sum = dec->bits[i] + carry;
-    carry = (sum < dec->bits[i]) ? 1 : 0;
-    dec->bits[i] = sum;
+    for (int i = 0; i < 3 && carry > 0; i++) {
+    unsigned int sum = inter_result.bits[i] + carry;
+    carry = (sum < inter_result.bits[i]) ? 1 : 0;
+    inter_result.bits[i] = sum;
   }
 
-  return (carry > 0) ? FAILURE : SUCCESS;
+  if (!carry) *dec = inter_result;
+  return (carry) ? FAILURE : SUCCESS;
 }
 
 int s21_decimal_sub_aligned(s21_decimal value_1, s21_decimal value_2,

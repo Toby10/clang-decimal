@@ -113,3 +113,6 @@
     s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
     int status = s21_decimal_round_bank(&dec, 6);
     ck_assert_int_eq(status, 1);
+    ck_assert_int_eq(dec.bits[0], 0xFFFFFFFF);
+    ck_assert_int_eq(dec.bits[1], 0xFFFFFFFF);
+    ck_assert_int_eq(dec.bits[2], 0xFFFFFFFF);
