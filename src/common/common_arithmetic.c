@@ -3,7 +3,7 @@
 // -=-=-=- SIMPLE ARITHMETIC -=-=-=-
 
 int s21_decimal_add_aligned(s21_decimal value_1, s21_decimal value_2,
-                    s21_decimal* result) {
+                            s21_decimal *result) {
   unsigned int sum = 0, leftover = 0;
   for (int i = 0; i < 3; i++) {
     sum = value_1.bits[i] + value_2.bits[i] + leftover;
@@ -11,25 +11,27 @@ int s21_decimal_add_aligned(s21_decimal value_1, s21_decimal value_2,
     leftover = sum >> 31;
   }
   int res = leftover ? 0 : 1;
-  // if(!res) result = s21_bank(result, leftover); TODOOOOOTOTOTOO
+  if (!res) res = s21_decimal_round_bank(result, leftover);
   return res;
 }
 
 int s21_decimal_add_digit(s21_decimal *dec, int digit) {
   if (!(digit >= 0 && digit <= 9)) return FAILURE;
 
+  s21_decimal inter_result = *dec;
   unsigned int carry = digit;
-  for (int i = 0; i < 3 && carry > 0; i++) {
-    unsigned int sum = dec->bits[i] + carry;
-    carry = (sum < dec->bits[i]) ? 1 : 0;
-    dec->bits[i] = sum;
+    for (int i = 0; i < 3 && carry > 0; i++) {
+    unsigned int sum = inter_result.bits[i] + carry;
+    carry = (sum < inter_result.bits[i]) ? 1 : 0;
+    inter_result.bits[i] = sum;
   }
 
-  return (carry > 0) ? FAILURE : SUCCESS;
+  if (!carry) *dec = inter_result;
+  return (carry) ? FAILURE : SUCCESS;
 }
 
 int s21_decimal_sub_aligned(s21_decimal value_1, s21_decimal value_2,
-                    s21_decimal *result) {
+                            s21_decimal *result) {
   unsigned long diff = 0;
   unsigned long borrow = 0;
   for (int i = 0; i < 3; i++) {
@@ -43,7 +45,7 @@ int s21_decimal_sub_aligned(s21_decimal value_1, s21_decimal value_2,
 
 int s21_decimal_div_by_10(s21_decimal *value) {
   unsigned int leftover = 0;
-  
+
   for (int j = 2; j >= 0; j--) {
     unsigned int cur_bit = (leftover << 31) | value->bits[j];
     value->bits[j] = cur_bit / 10;
@@ -69,16 +71,6 @@ int s21_decimal_mul_by_10(s21_decimal *value) {
   return res;
 }
 
-/*
-int s21_decimal_mul_by_10(s21_decimal *dec) {
-  s21_decimal tmp1 = *dec;
-  s21_decimal tmp2 = *dec;
-  int ok1 = s21_decimal_shift_left_n(&tmp1, 3);             // * 8
-  int ok2 = s21_decimal_shift_left_n(&tmp2, 1);             // * 2
-  return (ok1 && ok2 && s21_decimal_add_aligned(tmp1, tmp2, dec));  // 8x + 2x
-}
-*/
-
 int s21_decimal_shift_left_n(s21_decimal *dec, int n) {
   unsigned carry = 0;
 
@@ -91,6 +83,19 @@ int s21_decimal_shift_left_n(s21_decimal *dec, int n) {
   }
 
   return (carry) ? FAILURE : SUCCESS;
+}
+
+int s21_decimal_round_bank(s21_decimal *dec, unsigned int leftover) {
+  if (!dec || leftover > 9) return FAILURE;
+
+  int overflow = FALSE;
+  if (leftover > 5) {
+    overflow = s21_decimal_inc(dec);
+  } else if (leftover == 5) {
+    if ((dec->bits[0] & 1) != 0) overflow = s21_decimal_inc(dec);
+  }
+
+  return overflow;
 }
 
 // -=-=-=- SCALE FUNCTIONS -=-=-=-

@@ -14,6 +14,8 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   }
   s21_decimal_set_sign(result, finalSign);
   s21_decimal_set_scale(result, finalScale);
-  status = status + status * finalSign;
+  if (status != 0) {
+    status = finalSign + 1;
+  }
   return status;
 }

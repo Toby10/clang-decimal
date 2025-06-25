@@ -72,3 +72,47 @@
     ck_assert_int_eq(max_scale, 3);
     ck_assert_int_eq(s21_decimal_get_scale(&a), 3);
     ck_assert_int_eq(s21_decimal_get_scale(&b), 3);
+
+
+// -=-=-=- Bank round -=-=-=-
+
+#test s21_decimal_round_bank_over_five
+    s21_decimal dec = {{10, 0, 0, 0}};
+    int status = s21_decimal_round_bank(&dec, 6);
+    ck_assert_int_eq(status, 0);
+    ck_assert_int_eq(dec.bits[0], 11);  // incremented
+
+#test s21_decimal_round_bank_under_five
+    s21_decimal dec = {{10, 0, 0, 0}};
+    int status = s21_decimal_round_bank(&dec, 4);
+    ck_assert_int_eq(status, 0);
+    ck_assert_int_eq(dec.bits[0], 10);  // nothing changed
+
+#test s21_decimal_round_bank_exactly_five_even
+    s21_decimal dec = {{10, 0, 0, 0}};
+    int status = s21_decimal_round_bank(&dec, 5);
+    ck_assert_int_eq(status, 0);
+    ck_assert_int_eq(dec.bits[0], 10);  // nothing changed
+
+#test s21_decimal_round_bank_exactly_five_odd
+    s21_decimal dec = {{11, 0, 0, 0}};
+    int status = s21_decimal_round_bank(&dec, 5);
+    ck_assert_int_eq(status, 0);
+    ck_assert_int_eq(dec.bits[0], 12);  // incremented
+
+#test s21_decimal_round_bank_invalid_null
+    int status = s21_decimal_round_bank(NULL, 5);
+    ck_assert_int_eq(status, 1);  // FAILURE
+
+#test s21_decimal_round_bank_invalid_leftover
+    s21_decimal dec = {{0}};
+    int status = s21_decimal_round_bank(&dec, 10);
+    ck_assert_int_eq(status, 1);  // FAILURE
+
+#test s21_decimal_round_bank_with_overflow
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
+    int status = s21_decimal_round_bank(&dec, 6);
+    ck_assert_int_eq(status, 1);
+    ck_assert_int_eq(dec.bits[0], 0xFFFFFFFF);
+    ck_assert_int_eq(dec.bits[1], 0xFFFFFFFF);
+    ck_assert_int_eq(dec.bits[2], 0xFFFFFFFF);
