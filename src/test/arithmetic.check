@@ -46,6 +46,37 @@
 
 // -=-=-=- DIVISION -=-=-=-
 
+#test s21_div_big_int
+    s21_decimal a = {{0xFFFFFFFE, 0xFFFFFFFF, 0xFFFFFFFF, 0}}; // even num
+    s21_decimal b = {{2, 0, 0, 0}};
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, 0);  // SUCCESS
+
+    
+    s21_decimal expected = {{0xFFFFFFFF, 0xFFFFFFFF, 0x7FFFFFFF, 0}};
+
+    ck_assert_msg(
+        s21_is_equal(res, expected),
+        "Expected 7FFFFFFF..., got: {%08X %08X %08X %08X}",
+        res.bits[0], res.bits[1], res.bits[2], res.bits[3]
+    );
+
+#test s21_div_int_all_digits
+    s21_decimal a = {{0xCE38E38E, 0x8A195A9E, 0x47CDCA98, 0}}; // 22222...
+    s21_decimal b = {{2, 0, 0, 0}};
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, 0);  // SUCCESS
+
+    
+    s21_decimal expected = {{0x671C71C7, 0x450CAD4F, 0x23E6E54C, 0}};
+    ck_assert_msg(
+        s21_is_equal(res, expected),
+        "Expected 0.111... (scale 28), got: {%08X %08X %08X %08X}",
+        res.bits[0], res.bits[1], res.bits[2], res.bits[3]
+    );
+
 
 // -=-=-=- ADDITION -=-=-=-
 
