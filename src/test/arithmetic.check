@@ -73,9 +73,17 @@
     s21_decimal expected = {{0x671C71C7, 0x450CAD4F, 0x23E6E54C, 0}};
     ck_assert_msg(
         s21_is_equal(res, expected),
-        "Expected 0.111... (scale 28), got: {%08X %08X %08X %08X}",
+        "Expected 111...(10), got: {%08X %08X %08X %08X}",
         res.bits[0], res.bits[1], res.bits[2], res.bits[3]
     );
+
+#test s21_div_align_left
+    s21_decimal a = {{10, 0, 0, 0}};          // 10
+    s21_decimal b = {{1, 0, 0, 1 << 16}};       // 0.1
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, 0);
+    ck_assert_int_eq(res.bits[0], 100);
 
 
 // -=-=-=- ADDITION -=-=-=-
