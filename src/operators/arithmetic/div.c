@@ -1,4 +1,4 @@
-#include <stdio.h>
+// TODO: remove – #include <stdio.h>
 
 #include "../../common/common_arithmetic.h"
 
@@ -97,7 +97,7 @@ int s21_div(s21_decimal src, s21_decimal divider, s21_decimal *output) {
       s21_from_decimal_to_float(src, &a);
       s21_from_decimal_to_float(divider, &b);
       s21_from_decimal_to_float(*output, &c);
-      printf("%.1f/%.1f = %.1f\n", a, b, c);
+      // TODO: remove – printf("%.1f/%.1f = %.1f\n", a, b, c);
     }
   }
 
