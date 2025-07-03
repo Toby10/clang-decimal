@@ -8,12 +8,12 @@ int s21_decimal_add_aligned(s21_decimal value_1, s21_decimal value_2,
   unsigned int leftover = 0;
   int res = 0;
   for (int i = 0; i < 3; i++) {
-    sum = value_1.bits[i] + value_2.bits[i] + leftover;
-    result->bits[i] = sum & ((1ull << 32) - 1);
+    sum = (unsigned long long)value_1.bits[i] + (unsigned long long)value_2.bits[i] + leftover;
     leftover = (unsigned int)(sum >> 32);
+    result->bits[i] = (unsigned int) ((sum & 0xFFFFFFFF) - leftover);
     res |= leftover ? 1 : 0;
   }
-  if (res) res &= !s21_decimal_round_bank(result, leftover);
+  if(res) res &= !s21_decimal_round_bank(result, leftover);
   return !res;
 }
 
