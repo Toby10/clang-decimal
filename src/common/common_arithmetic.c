@@ -4,12 +4,13 @@
 
 int s21_decimal_add_aligned(s21_decimal value_1, s21_decimal value_2,
                             s21_decimal *result) {
-  unsigned int sum = 0, leftover = 0;
+  unsigned long long sum = 0;
+  unsigned int leftover = 0;
   int res = 0;
   for (int i = 0; i < 3; i++) {
     sum = value_1.bits[i] + value_2.bits[i] + leftover;
-    result->bits[i] = sum & ((1u << 31) - 1);
-    leftover = sum >> 31;
+    result->bits[i] = sum & ((1ull << 32) - 1);
+    leftover = (unsigned int)(sum >> 32);
     res |= leftover ? 1 : 0;
   }
   if (res) res &= !s21_decimal_round_bank(result, leftover);

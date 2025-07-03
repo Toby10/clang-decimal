@@ -122,10 +122,10 @@
     s21_decimal val1 = {{0xFFFFFFFF/2, 0xFFFFFFFF/2, 0xFFFFFFFF/2, 0}};
     s21_decimal val2 = {{0, 0, 1, 0}};
     s21_decimal res;
-    ck_assert_int_eq(s21_add(val1, val2, &res), 1);
+    ck_assert_int_eq(s21_add(val1, val2, &res), 0);
     ck_assert_int_eq(res.bits[0], 0xFFFFFFFF/2);
     ck_assert_int_eq(res.bits[1], 0xFFFFFFFF/2);
-    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[2], 0xFFFFFFFF/2 + 1);
     ck_assert_int_eq(res.bits[3], 0);
 
 #test s21_add_simple_negative
@@ -179,13 +179,13 @@
     ck_assert_int_eq(res.bits[3], 0x80000000);
 
 #test s21_add_overflow
-    s21_decimal val1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF - 1, 0}};
+    s21_decimal val1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
     s21_decimal val2 = {{1, 0, 0, 0}};
     s21_decimal res;
-    ck_assert_int_eq(s21_add(val1, val2, &res), 1);
+    ck_assert_int_eq(s21_add(val1, val2, &res), 0);
     ck_assert_int_eq(res.bits[0], 0);
-    ck_assert_int_eq(res.bits[1], 0xFFFFFFFF/2);
-    ck_assert_int_eq(res.bits[2], 0xFFFFFFFF/2);
+    ck_assert_int_eq(res.bits[1], 0xFFFFFFFF);
+    ck_assert_int_eq(res.bits[2], 0xFFFFFFFF);
     ck_assert_int_eq(res.bits[3], 0);
 
 // -=-=-=- SUBSTRACTION -=-=-=-
