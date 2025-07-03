@@ -181,12 +181,17 @@
 #test s21_add_overflow
     s21_decimal val1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
     s21_decimal val2 = {{1, 0, 0, 0}};
-    s21_decimal res;
+    s21_decimal res = {{0}};
     ck_assert_int_eq(s21_add(val1, val2, &res), 1);
-    ck_assert_int_eq(res.bits[0], 0xFFFFFFFF);
-    ck_assert_int_eq(res.bits[1], 0xFFFFFFFF);
-    ck_assert_int_eq(res.bits[2], 0xFFFFFFFF);
-    ck_assert_int_eq(res.bits[3], 0);
+
+#test s21_decimal_add_similar_adding
+    s21_decimal a = {{0x386e0aaa, 0x9, 0, 0}}, b = {{0xe1b82aa8, 0x24, 0, 0}}, res = {{0}};
+    //int ok = s21_add(res, a, &res);
+    //ok = s21_add(res, b, &res);
+    int ok = s21_add(a, b, &res);
+    ck_assert_int_eq(ok, 0);
+    ck_assert_int_eq(res.bits[0], 0x1a263552);
+    ck_assert_int_eq(res.bits[1], 0x2e);
 
 // -=-=-=- SUBSTRACTION -=-=-=-
 

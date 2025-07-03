@@ -9,8 +9,8 @@ int s21_decimal_add_aligned(s21_decimal value_1, s21_decimal value_2,
   int res = 0;
   for (int i = 0; i < 3; i++) {
     sum = (unsigned long long)value_1.bits[i] + (unsigned long long)value_2.bits[i] + leftover;
+    result->bits[i] = (unsigned int) (sum & 0xFFFFFFFF);
     leftover = (unsigned int)(sum >> 32);
-    result->bits[i] = (unsigned int) ((sum & 0xFFFFFFFF) - leftover);
     res = leftover ? 1 : 0;
   }
   if(res) res &= !s21_decimal_round_bank(result, leftover);
@@ -44,7 +44,6 @@ int s21_decimal_sub_aligned(s21_decimal value_1, s21_decimal value_2,
     res |= borrow ? 1 : 0;
   }
   if (res) {
-    printf("%d\n", value_1.bits[0]);
     s21_decimal_round_bank(result, borrow);
   }
   return !res;
