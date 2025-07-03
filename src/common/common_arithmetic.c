@@ -11,7 +11,7 @@ int s21_decimal_add_aligned(s21_decimal value_1, s21_decimal value_2,
     sum = (unsigned long long)value_1.bits[i] + (unsigned long long)value_2.bits[i] + leftover;
     leftover = (unsigned int)(sum >> 32);
     result->bits[i] = (unsigned int) ((sum & 0xFFFFFFFF) - leftover);
-    res |= leftover ? 1 : 0;
+    res = leftover ? 1 : 0;
   }
   if(res) res &= !s21_decimal_round_bank(result, leftover);
   return !res;
