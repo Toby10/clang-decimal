@@ -1,6 +1,5 @@
-// TODO: remove – #include <stdio.h>
-
 #include "../../common/common_arithmetic.h"
+#define is_dec_zero(dec) is_s21_decimal_zero(dec)
 
 typedef struct {
   s21_decimal buffer;
@@ -9,11 +8,12 @@ typedef struct {
   int shift;
   int shifted_down_by;
   s21_decimal increase_shifted;
-  
+  int count;
+
   s21_decimal result;
   int scale;
   int sign;
-  
+
   int too_small;
   int too_big;
 } s21_div_context;
@@ -27,11 +27,11 @@ s21_div_context s21_div_initialize(s21_decimal *dec_1, s21_decimal *dec_2) {
   scale_1 = s21_decimal_get_scale(dec_1);
   scale_2 = s21_decimal_get_scale(dec_2);
 
-  ctx.shift = scale_2 - scale_1; // Align decimals
+  ctx.shift = scale_2 - scale_1;  // Align decimals
   if (scale_1 > scale_2) {
-    ctx.shifted_down_by = -1 * ctx.shift; // TODO: test it, idk at all
+    ctx.shifted_down_by = -1 * ctx.shift;
     ctx.shift = 0;
-    // TODO: optimize by MIN/MAX if it works
+    // TODO: optimize by MIN/MAX
   }
 
   if (ctx.shift) {
@@ -42,7 +42,7 @@ s21_div_context s21_div_initialize(s21_decimal *dec_1, s21_decimal *dec_2) {
   } else {
     ctx.increase_shifted.bits[0] = 1;
   }
-
+  
   ctx.sign = s21_decimal_get_sign(dec_1) ^ s21_decimal_get_sign(dec_2);
 
   // Make decimals as positive integers
@@ -59,47 +59,43 @@ int s21_div(s21_decimal src, s21_decimal divider, s21_decimal *output) {
 
   s21_div_context ctx = s21_div_initialize(&src, &divider);
 
-  while (ctx.position-- > 0 || (!is_s21_decimal_zero(&ctx.buffer) && ctx.scale < 28)) {
+  while (ctx.position-- > 0 || (!is_dec_zero(&ctx.buffer) && ctx.scale <= 28)) {
     if (ctx.position < 0) {
       (ctx.scale)++;
       s21_mul(ctx.buffer, ctx.ten, &ctx.buffer);
-      ctx.too_big = s21_mul(ctx.result, ctx.ten, &ctx.result) > 0;
+      if (ctx.scale <= 28) s21_mul(ctx.result, ctx.ten, &ctx.result);
     } else {
       s21_decimal_shift_left_n(&ctx.buffer, 1);
-      s21_decimal_shift_left_n(&ctx.result, 1);
+      ctx.too_big = s21_decimal_shift_left_n(&ctx.result, 1);
     }
 
     if (!ctx.scale && !ctx.too_big) {
       s21_set_bit(&ctx.buffer, 0, s21_get_bit(&src, ctx.position));
     }
 
-    int count = 0;
+    ctx.count = 0;
     while (s21_is_greater_or_equal(ctx.buffer, divider) && !ctx.too_big) {
       s21_decimal_sub_aligned(ctx.buffer, divider, &ctx.buffer);
       if (!ctx.scale)
         s21_add(ctx.result, ctx.increase_shifted, &ctx.result);
       else
-        count++;
+        (ctx.count)++;
     }
-    if (count && !ctx.too_big) s21_decimal_add_digit(&ctx.result, count);
+    if (ctx.count && !ctx.too_big && ctx.scale <= 28)
+      s21_decimal_add_digit(&ctx.result, ctx.count);
   }
 
-  // TODO: ctx.too_big = round() > 0
+  ctx.too_big = s21_decimal_round_bank(&ctx.result, ctx.count) || ctx.too_big;
 
   if (!ctx.too_big) {
-    ctx.too_small = (is_s21_decimal_zero(&ctx.result) && !is_s21_decimal_zero(&ctx.buffer));
+    ctx.too_small =
+        (is_s21_decimal_zero(&ctx.result) && !is_s21_decimal_zero(&ctx.buffer));
     if (!ctx.too_small) {
       *output = ctx.result;
       s21_decimal_set_sign(output, ctx.sign);
-      s21_decimal_set_scale(output, ctx.scale + ctx.shifted_down_by);
-
-      float a, b, c;
-      s21_from_decimal_to_float(src, &a);
-      s21_from_decimal_to_float(divider, &b);
-      s21_from_decimal_to_float(*output, &c);
-      // TODO: remove – printf("%.1f/%.1f = %.1f\n", a, b, c);
+      s21_decimal_set_scale(output, s21_min(ctx.scale, 28) + ctx.shifted_down_by);
     }
   }
 
-  return (ctx.too_small) ? S21_TOO_SMALL : (ctx.too_big) ? (S21_TOO_BIG + ctx.sign) : SUCCESS;
+  return (ctx.too_small * 2) + (ctx.too_big * (ctx.sign + 1));
 }

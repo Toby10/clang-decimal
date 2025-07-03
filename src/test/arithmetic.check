@@ -52,10 +52,7 @@
     s21_decimal res = {{0}};
     int code = s21_div(a, b, &res);
     ck_assert_int_eq(code, 0);  // SUCCESS
-
-    
     s21_decimal expected = {{0xFFFFFFFF, 0xFFFFFFFF, 0x7FFFFFFF, 0}};
-
     ck_assert_msg(
         s21_is_equal(res, expected),
         "Expected 7FFFFFFF..., got: {%08X %08X %08X %08X}",
@@ -68,8 +65,6 @@
     s21_decimal res = {{0}};
     int code = s21_div(a, b, &res);
     ck_assert_int_eq(code, 0);  // SUCCESS
-
-    
     s21_decimal expected = {{0x671C71C7, 0x450CAD4F, 0x23E6E54C, 0}};
     ck_assert_msg(
         s21_is_equal(res, expected),
@@ -78,12 +73,49 @@
     );
 
 #test s21_div_align_left
-    s21_decimal a = {{10, 0, 0, 0}};          // 10
-    s21_decimal b = {{1, 0, 0, 1 << 16}};       // 0.1
+    s21_decimal a = {{1000, 0, 0, 0}};          // 1000
+    s21_decimal b = {{1, 0, 0, 3 << 16}};       // 0.001
     s21_decimal res = {{0}};
     int code = s21_div(a, b, &res);
     ck_assert_int_eq(code, 0);
-    ck_assert_int_eq(res.bits[0], 100);
+    ck_assert_int_eq(res.bits[0], 1000000);
+
+#test s21_div_align_right
+    s21_decimal a = {{1, 0, 0, 3 << 16}};          // 0.001
+    s21_decimal b = {{100, 0, 0, 0}};       // 100
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, 0);
+    ck_assert_int_eq(s21_decimal_get_scale(&res), 5);
+    ck_assert_int_eq(res.bits[0], 1);
+
+#test s21_div_one_third
+    s21_decimal a = {{1, 0, 0, 0}};
+    s21_decimal b = {{3, 0, 0, 0}};
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, 0);
+    ck_assert_int_eq(s21_decimal_get_scale(&res), 28);
+    s21_decimal expected = {{0x05555555, 0x14B700CB, 0x0AC544CA, 0x001C0000}};
+    ck_assert_msg(
+        s21_is_equal(res, expected),
+        "Expected 0.333...(10), got: {%08X %08X %08X %08X}",
+        res.bits[0], res.bits[1], res.bits[2], res.bits[3]
+    );
+
+#test s21_div_two_third
+    s21_decimal a = {{2, 0, 0, 0}};
+    s21_decimal b = {{3, 0, 0, 0}};
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, 0);
+    ck_assert_int_eq(s21_decimal_get_scale(&res), 28);
+    s21_decimal expected = {{0x0AAAAAAB, 0x296E0196, 0x158A8994, 0x001C0000}};
+    ck_assert_msg(
+        s21_is_equal(res, expected),
+        "Expected 0.666...7(10), got: {%08X %08X %08X %08X}",
+        res.bits[0], res.bits[1], res.bits[2], res.bits[3]
+    );
 
 
 // -=-=-=- ADDITION -=-=-=-
