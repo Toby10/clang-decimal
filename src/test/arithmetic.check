@@ -280,8 +280,8 @@
     s21_decimal val2 = {{6, 0, 0, 1 << 16}};
     s21_decimal res;
     ck_assert_int_eq(s21_sub(val1, val2, &res), 0);
-    ck_assert_int_eq(res.bits[0], 0xFFFFFFFF/2 - 6);
-    ck_assert_int_eq(res.bits[1], 0xFFFFFFFF/2);
-    ck_assert_int_eq(res.bits[2], 0xFFFFFFFF/2);
+    ck_assert_int_eq(res.bits[0], 0xFFFFFFFF - 6);
+    ck_assert_int_eq(res.bits[1], 0xFFFFFFFF);
+    ck_assert_int_eq(res.bits[2], 0xFFFFFFFF);
     ck_assert_int_eq(res.bits[3], 1 << 16);
     

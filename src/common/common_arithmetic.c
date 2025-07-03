@@ -39,7 +39,7 @@ int s21_decimal_sub_aligned(s21_decimal value_1, s21_decimal value_2,
   int res = 0;
   for (int i = 0; i < 3; i++) {
     diff = value_1.bits[i] - value_2.bits[i] - borrow;
-    result->bits[i] = (diff & ((1u << 31) - 1));
+    result->bits[i] = (diff & ((1ul << 32) - 1));
     borrow = (diff >> (32 * 2 - 1)) & 1;
     res |= borrow ? 1 : 0;
   }
