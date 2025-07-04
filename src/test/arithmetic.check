@@ -81,8 +81,8 @@
     ck_assert_int_eq(res.bits[0], 1000000);
 
 #test s21_div_align_right
-    s21_decimal a = {{1, 0, 0, 3 << 16}};          // 0.001
-    s21_decimal b = {{100, 0, 0, 0}};       // 100
+    s21_decimal a = {{1, 0, 0, 3 << 16}};  // 0.001
+    s21_decimal b = {{100, 0, 0, 0}};      // 100
     s21_decimal res = {{0}};
     int code = s21_div(a, b, &res);
     ck_assert_int_eq(code, 0);
@@ -116,6 +116,86 @@
         "Expected 0.666...7(10), got: {%08X %08X %08X %08X}",
         res.bits[0], res.bits[1], res.bits[2], res.bits[3]
     );
+
+#test s21_div_by_zero
+    s21_decimal a = {{5, 0, 0, 0}};
+    s21_decimal b = {{0, 0, 0, 0}};
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(res.bits[0], 0);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(code, S21_DIV_BY_ZERO);
+
+#test s21_div_negative_result
+    s21_decimal a = {{100, 0, 0, (1u << 31)}};
+    s21_decimal b = {{2, 0, 0, 0}};
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, 0);
+    ck_assert_int_eq(s21_decimal_get_sign(&res), 1);
+    ck_assert_int_eq(res.bits[0], 50);
+
+#test s21_div_same_values
+    s21_decimal a = {{123456, 0, 0, 0}};
+    s21_decimal b = {{123456, 0, 0, 0}};
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, 0);
+    ck_assert_int_eq(res.bits[0], 1);
+    ck_assert_int_eq(s21_decimal_get_scale(&res), 0);
+
+#test s21_div_fraction_shifted
+    s21_decimal a = {{2, 0, 0, 4 << 16}};  // 0.00002
+    s21_decimal b = {{123, 0, 0, 0}};
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, 0);  // SUCCESS
+    ck_assert_int_eq(s21_decimal_get_scale(&res), 28);
+    s21_decimal expected = {{0x2A29A043, 0x77161825, 0x00000371, 0x001C0000}};
+    ck_assert_msg(
+        s21_is_equal(res, expected),
+        "Expected , got: {%08X %08X %08X %08X}",
+        res.bits[0], res.bits[1], res.bits[2], res.bits[3]
+    );
+
+#test s21_div_all_in_one
+    s21_decimal a = {{0xB5AC71C7, 0x9A3298AF, 0, 0}}; // 11111111111111111111
+    //s21_decimal a = {{0xA98AC7, 0, 0, 0}};
+    
+    s21_decimal b = {{3, 0, 0, 0}};
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, 0);  // SUCCESS
+    ck_assert_int_eq(s21_decimal_get_scale(&res), 10);
+    s21_decimal expected = {{0x41A0BEAB, 0xE62A41B3, 0x77AC51A8, 0x000A0000}};
+    ck_assert_msg(
+        s21_is_equal(res, expected),
+        "Expected , got: {%08X %08X %08X %08X}",
+        res.bits[0], res.bits[1], res.bits[2], res.bits[3]
+    );
+
+#test s21_div_too_big
+    s21_decimal a = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
+    s21_decimal b = {{1, 0, 0, 1 << 16}}; // 0.1
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, S21_TOO_BIG);
+    ck_assert_int_eq(res.bits[0], 0);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0);
+
+#test s21_div_too_small
+    s21_decimal a = {{1, 0, 0, 28 << 16}};
+    s21_decimal b = {{10, 0, 0,}};
+    s21_decimal res = {{0}};
+    int code = s21_div(a, b, &res);
+    ck_assert_int_eq(code, S21_TOO_SMALL);
+    ck_assert_int_eq(res.bits[0], 0);
+    ck_assert_int_eq(res.bits[1], 0);
+    ck_assert_int_eq(res.bits[2], 0);
+    ck_assert_int_eq(res.bits[3], 0);
 
 
 // -=-=-=- ADDITION -=-=-=-
