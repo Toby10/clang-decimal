@@ -1,0 +1,64 @@
+
+// -=-=-=- IS EQUAL -=-=-=-
+
+#test s21_is_equal_zeros_with_diff_scale
+    s21_decimal a = {{0, 0, 0, 2 << 16}};
+    s21_decimal b = {{0, 0, 0, 5 << 16}};
+    ck_assert_int_eq(s21_is_equal(a, b), 1);
+
+#test s21_is_equal_diff_sign
+    s21_decimal a = {{123, 0, 0, (2 << 16)}};
+    s21_decimal b = {{123, 0, 0, (2 << 16) | (1 << 31)}};
+    ck_assert_int_eq(s21_is_equal(a, b), 0);
+
+#test s21_is_equal_high_bits
+    s21_decimal a = {{0, 0xABCDEF12, 0x12345678, 10 << 16}};
+    s21_decimal b = {{0, 0xABCDEF12, 0x12345678, 10 << 16}};
+    ck_assert_int_eq(s21_is_equal(a, b), 1);
+
+#test s21_is_equal_max_values_diff_scale
+    s21_decimal a = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0 << 16}};
+    s21_decimal b = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 5 << 16}};
+    ck_assert_int_eq(s21_is_equal(a, b), 0);
+
+#test s21_is_equal_negative_zero
+    s21_decimal a = {{0, 0, 0, (1u << 31)}};
+    s21_decimal b = {{0, 0, 0, 0}};
+    ck_assert_int_eq(s21_is_equal(a, b), 1);
+
+// -=-=-=- IS LESS -=-=-=-
+
+#test s21_is_less_positive
+    s21_decimal a = {{1, 0, 0, 1 << 16}};
+    s21_decimal b = {{2, 0, 0, 1 << 16}};
+    ck_assert_int_eq(s21_is_less(a, b), 1);
+
+#test s21_is_less_negative
+    s21_decimal a = {{2, 0, 0, (1 << 31)}};
+    s21_decimal b = {{1, 0, 0, (1 << 31)}};
+    ck_assert_int_eq(s21_is_less(a, b), 1);
+
+#test s21_is_less_negative_with_scale
+    s21_decimal a = {{1234, 0, 0, (3 << 16) | (1u << 31)}};
+    s21_decimal b = {{12345, 0, 0, (4 << 16) | (1u << 31)}};
+    ck_assert_int_eq(s21_is_less(a, b), 0);
+
+#test s21_is_less_overflow_risk
+    s21_decimal a = {{0x0FFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 1 << 16}};
+    s21_decimal b = {{1, 0, 0, 28 << 16}};
+    ck_assert_int_eq(s21_is_less(a, b), 0);
+
+#test s21_is_less_extreme_scales
+    s21_decimal a = {{123, 0, 0, 28 << 16}};
+    s21_decimal b = {{1230, 0, 0, 28 << 16}};
+    ck_assert_int_eq(s21_is_less(a, b), 1);
+
+#test s21_is_less_sign_and_scale
+    s21_decimal a = {{100, 0, 0, (2 << 16) | (1u << 31)}};
+    s21_decimal b = {{10000, 0, 0, 5 << 16}};
+    ck_assert_int_eq(s21_is_less(a, b), 1);
+
+#test s21_is_less_mixed_bits
+    s21_decimal a = {{0x11111111, 0x22222222, 0x0, 2 << 16}};
+    s21_decimal b = {{0x11111111, 0x22222222, 0x1, 2 << 16}};
+    ck_assert_int_eq(s21_is_less(a, b), 1);
