@@ -1,0 +1,70 @@
+#test s21_negate_positive
+    s21_decimal pos = {{123, 0, 0, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_negate(pos, &res), 0);
+    ck_assert_int_eq(res.bits[3], 0x80000000);
+
+
+#test s21_negate_negative
+    s21_decimal neg = {{123, 0, 0, 0x80000000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_negate(neg, &res), 0);
+    ck_assert_int_eq(res.bits[3], 0);
+    
+#test s21_negate_zero
+    s21_decimal zero = {{0, 0, 0, 0}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_negate(zero, &res), 0);
+    ck_assert_int_eq(res.bits[3], 0);
+
+
+#test s21_truncate_one
+    s21_decimal val = {{1555, 0, 0, 0x30000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_truncate(val, &res), 0);
+    ck_assert_int_eq(res.bits[0], 1);
+    ck_assert_int_eq(res.bits[3], 0);
+    
+
+#test s21_truncate_two
+    s21_decimal high_scale = {{123456789, 0, 0, 0x80000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_truncate(high_scale, &res), 0);
+    ck_assert_int_eq(res.bits[0], 1);
+
+
+#test s21_round_normal
+    s21_decimal val = {{1555, 0, 0, 0x30000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_round(val, &res), 0);
+    ck_assert_int_eq(res.bits[0], 2);
+    ck_assert_int_eq(res.bits[3], 0);
+    
+#test s21_round_up
+    s21_decimal val2 = {{1566, 0, 0, 0x30000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_round(val2, &res), 0);
+    ck_assert_int_eq(res.bits[0], 2);
+    
+#test s21_round_negative
+    s21_decimal neg_val = {{1555, 0, 0, 0x80030000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_round(neg_val, &res), 0);
+    ck_assert_int_eq(res.bits[0], 2);
+    ck_assert_int_eq(res.bits[3], 0x80000000);
+
+
+#test s21_floor_positive
+    s21_decimal val = {{15, 0, 0, 2 << 16}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_floor(val, &res), 0);
+    ck_assert_int_eq(res.bits[0], 0);
+    ck_assert_int_eq(res.bits[3], 0);
+    
+#test s21_floor_negative
+    s21_decimal neg_val = {{15, 0, 0, 0x80010000}};
+    s21_decimal res;
+    ck_assert_int_eq(s21_floor(neg_val, &res), 0);
+    ck_assert_int_eq(res.bits[0], 1);
+    ck_assert_int_eq(res.bits[3], 0x80000000);
+    

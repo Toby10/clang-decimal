@@ -1,0 +1,118 @@
+#test s21_decimal_add_aligned_basic
+    s21_decimal a = {{1, 0, 0, 0}}, b = {{2, 0, 0, 0}}, res = {{0}};
+    int ok = s21_decimal_add_aligned(a, b, &res);
+    ck_assert_int_eq(ok, 1);
+    ck_assert_int_eq(res.bits[0], 3);
+
+
+#test s21_decimal_add_digit_basic
+    s21_decimal a = {{42, 0, 0, 0}};
+    int ok = s21_decimal_add_digit(&a, 7);
+    ck_assert_int_eq(ok, 0);
+    ck_assert_int_eq(a.bits[0], 49);
+
+#test s21_decimal_add_digit_invalid
+    s21_decimal a = {{0}};
+    int ok = s21_decimal_add_digit(&a, -1);
+    ck_assert_int_eq(ok, 1);
+
+
+#test s21_decimal_sub_aligned_basic
+    s21_decimal a = {{10, 0, 0, 0}}, b = {{3, 0, 0, 0}}, res = {{0}};
+    int ok = s21_decimal_sub_aligned(a, b, &res);
+    ck_assert_int_eq(ok, 1);
+    ck_assert_int_eq(res.bits[0], 7);
+
+#test s21_decimal_div_by_10_basic
+    s21_decimal val = {{100, 0, 0, 0}};
+    int ok = s21_decimal_div_by_10(&val);
+    ck_assert_int_eq(ok, 0);
+    ck_assert_int_eq(val.bits[0], 10);
+
+#test s21_decimal_div_by_10_nondivisible
+    s21_decimal val = {{101, 0, 0, 0}};
+    int ok = s21_decimal_div_by_10(&val);
+    ck_assert_int_eq(ok, 1);
+
+
+#test s21_decimal_mul_by_10_basic
+    s21_decimal val = {{2, 0, 0, 0}};
+    int ok = s21_decimal_mul_by_10(&val);
+    ck_assert_int_eq(ok, 0);
+    ck_assert_int_eq(val.bits[0], 20);
+
+
+#test s21_decimal_shift_left_n_basic
+    s21_decimal val = {{1, 0, 0, 0}};
+    int ok = s21_decimal_shift_left_n(&val, 3);
+    ck_assert_int_eq(ok, 0);
+    ck_assert_int_eq(val.bits[0], 8);
+
+
+#test s21_decimal_inc_scale_basic
+    s21_decimal val = {{5, 0, 0, 0}};
+    s21_decimal_set_scale(&val, 1);
+    int ok = s21_decimal_inc_scale(&val);
+    ck_assert_int_eq(ok, 0);
+    ck_assert_int_eq(val.bits[0], 50);
+    ck_assert_int_eq(s21_decimal_get_scale(&val), 2);
+
+
+#test s21_decimal_dec_scale_basic
+    s21_decimal val = {{1000, 0, 0, 3 << 16}};
+    s21_decimal_dec_scale(&val, 2);
+    ck_assert_int_eq(val.bits[0], 10);
+    ck_assert_int_eq(s21_decimal_get_scale(&val), 1);
+
+
+#test s21_decimal_align_scale_basic
+    s21_decimal a = {{1000, 0, 0, 3 << 16}};  // scale=3
+    s21_decimal b = {{1, 0, 0, 0}};           // scale=0
+    int max_scale = s21_decimal_align_scale(&a, &b);
+    ck_assert_int_eq(max_scale, 3);
+    ck_assert_int_eq(s21_decimal_get_scale(&a), 3);
+    ck_assert_int_eq(s21_decimal_get_scale(&b), 3);
+
+
+// -=-=-=- Bank round -=-=-=-
+
+#test s21_decimal_round_bank_over_five
+    s21_decimal dec = {{10, 0, 0, 0}};
+    int status = s21_decimal_round_bank(&dec, 6);
+    ck_assert_int_eq(status, 0);
+    ck_assert_int_eq(dec.bits[0], 11);  // incremented
+
+#test s21_decimal_round_bank_under_five
+    s21_decimal dec = {{10, 0, 0, 0}};
+    int status = s21_decimal_round_bank(&dec, 4);
+    ck_assert_int_eq(status, 0);
+    ck_assert_int_eq(dec.bits[0], 10);  // nothing changed
+
+#test s21_decimal_round_bank_exactly_five_even
+    s21_decimal dec = {{10, 0, 0, 0}};
+    int status = s21_decimal_round_bank(&dec, 5);
+    ck_assert_int_eq(status, 0);
+    ck_assert_int_eq(dec.bits[0], 10);  // nothing changed
+
+#test s21_decimal_round_bank_exactly_five_odd
+    s21_decimal dec = {{11, 0, 0, 0}};
+    int status = s21_decimal_round_bank(&dec, 5);
+    ck_assert_int_eq(status, 0);
+    ck_assert_int_eq(dec.bits[0], 12);  // incremented
+
+#test s21_decimal_round_bank_invalid_null
+    int status = s21_decimal_round_bank(NULL, 5);
+    ck_assert_int_eq(status, 1);  // FAILURE
+
+#test s21_decimal_round_bank_invalid_leftover
+    s21_decimal dec = {{0}};
+    int status = s21_decimal_round_bank(&dec, 10);
+    ck_assert_int_eq(status, 1);  // FAILURE
+
+#test s21_decimal_round_bank_with_overflow
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
+    int status = s21_decimal_round_bank(&dec, 6);
+    ck_assert_int_eq(status, 1);
+    ck_assert_int_eq(dec.bits[0], 0xFFFFFFFF);
+    ck_assert_int_eq(dec.bits[1], 0xFFFFFFFF);
+    ck_assert_int_eq(dec.bits[2], 0xFFFFFFFF);
