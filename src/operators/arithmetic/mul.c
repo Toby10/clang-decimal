@@ -6,7 +6,8 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *output) {
   int finalScale =
       s21_decimal_get_scale(&value_1) + s21_decimal_get_scale(&value_2);
   int finalSign = 0;
-  finalSign = (s21_decimal_get_sign(&value_1) + s21_decimal_get_sign(&value_2)) % 2;
+  finalSign =
+      (s21_decimal_get_sign(&value_1) + s21_decimal_get_sign(&value_2)) % 2;
   for (int i = 0; i < s21_decimal_get_power(&value_1) + 1; i++) {
     if (s21_get_bit(&value_1, i) == 1) {
       status |= s21_add(value_2, result, &result);

@@ -1,4 +1,5 @@
 #include "common_arithmetic.h"
+
 #include <stdio.h>
 // -=-=-=- SIMPLE ARITHMETIC -=-=-=-
 
@@ -8,12 +9,13 @@ int s21_decimal_add_aligned(s21_decimal value_1, s21_decimal value_2,
   unsigned int leftover = 0;
   int res = 0;
   for (int i = 0; i < 3; i++) {
-    sum = (unsigned long long)value_1.bits[i] + (unsigned long long)value_2.bits[i] + leftover;
-    result->bits[i] = (unsigned int) (sum & 0xFFFFFFFF);
-    leftover = (unsigned int)(sum >> 32);
+    sum = (unsigned long long)value_1.bits[i] +
+          (unsigned long long)value_2.bits[i] + leftover;
+    result->bits[i] = (unsigned int)(sum & 0xFFFFFFFF);
+    leftover = (unsigned int)(sum >> sizeof(unsigned int) * 8);
     res = leftover ? 1 : 0;
   }
-  if(res) res &= !s21_decimal_round_bank(result, leftover);
+  if (res) res &= !s21_decimal_round_bank(result, leftover);
   return !res;
 }
 
@@ -22,7 +24,7 @@ int s21_decimal_add_digit(s21_decimal *dec, int digit) {
 
   s21_decimal inter_result = *dec;
   unsigned int carry = digit;
-    for (int i = 0; i < 3 && carry > 0; i++) {
+  for (int i = 0; i < 3 && carry > 0; i++) {
     unsigned int sum = inter_result.bits[i] + carry;
     carry = (sum < inter_result.bits[i]) ? 1 : 0;
     inter_result.bits[i] = sum;
@@ -40,7 +42,7 @@ int s21_decimal_sub_aligned(s21_decimal value_1, s21_decimal value_2,
   for (int i = 0; i < 3; i++) {
     diff = value_1.bits[i] - value_2.bits[i] - borrow;
     result->bits[i] = (diff & ((1ul << 32) - 1));
-    borrow = (diff >> (32 * 2 - 1)) & 1;
+    borrow = (diff >> (sizeof(unsigned long) * 8 - 1)) & 1;
     res |= borrow ? 1 : 0;
   }
   if (res) {
